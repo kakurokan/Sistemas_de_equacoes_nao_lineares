@@ -1,6 +1,7 @@
 import math
 
 import sympy as smp
+from pick import pick
 from sympy.parsing.sympy_parser import implicit_multiplication, standard_transformations, convert_xor
 
 
@@ -70,6 +71,12 @@ def biseccao(f, a, b, tol, nMax):
 
 
 def main():
+    title = 'Selecione um método : '
+    options = ['Biseccao', 'Newton-Raphson', 'Secante']
+    option, index = pick(options, title)
+    print(option)
+    print(index)
+
     try:
         x = smp.symbols('x', real=True)
         f = input("Insira a funcao: ")
