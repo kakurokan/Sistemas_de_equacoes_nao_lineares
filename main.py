@@ -120,11 +120,15 @@ def main():
                                 convert_xor))  # Permite que o parse aceite '^' = **, 'ax' = a * x, e^a = exp(a)
             locals_vars = {'x': x, 'e': smp.E}  # Permite que o perse reconhece e = exp() e x como variável
             f = smp.parse_expr(f, local_dict=locals_vars,
-                               transformations=transformations)  # Converte o input em uma expressão sympy
+                               transformations=transformations)  # Converte o input numa expressão sympy
 
             print("Insira o intervalo [a; b] onde existe única uma raiz de f(x).")
             a = float(input("a: "))
             b = float(input("b: "))
+
+            if a >= b:
+                print("Erro: a deve ser menor que b. Tente novamente.")
+                continue
 
             df_sympy = smp.diff(f, x)  # Deriva f em função de x
 
@@ -141,7 +145,7 @@ def main():
                 raiz = biseccao(f, a, b, tol, n_max)
             elif option[0] == 'Newton-Raphson':
                 df2_sympy = smp.diff(df_sympy, x)  # Segunda derivada de f
-                df2 = smp.lambdify(x, df2)  # Converte a segunda derivada em método
+                df2 = smp.lambdify(x, df2_sympy)  # Converte a segunda derivada em método
 
                 r0 = a if (df2(a) * f(
                     a) > 0) else b  # Verifica quais dos extremos tem o mesmo sinal da segunda derivada
