@@ -43,13 +43,13 @@ def verificar_intervalo(f, df, a, b):
             raise MaisDeUmRaiz
 
 
-def secante(f, r0, r1, tol, nMax):
+def secante(f, r0, r1, tol, n_max):
     f0 = f(r0)
     f1 = f(r1)
     if math.isclose(f0, 0.0, abs_tol=tol):
         return r0
 
-    for i in range(0, nMax):
+    for i in range(0, n_max):
         if f1 == f0:
             raise ZeroDivisionError
 
@@ -64,11 +64,11 @@ def secante(f, r0, r1, tol, nMax):
     raise IteracoesExcedidas
 
 
-def newton_raphson(f, df, r0, tol, nMax):
+def newton_raphson(f, df, r0, tol, n_max):
     if math.isclose(f(r0), 0.0, abs_tol=tol):
         return r0
 
-    for i in range(0, nMax):
+    for i in range(0, n_max):
         if df(r0) == 0.0:
             raise ZeroDivisionError
         r1 = r0 - (f(r0) / df(r0))
@@ -80,13 +80,13 @@ def newton_raphson(f, df, r0, tol, nMax):
     raise IteracoesExcedidas
 
 
-def biseccao(f, a, b, tol, nMax):
+def biseccao(f, a, b, tol, n_max):
     if f(a) * f(b) > 0:
         raise SemRaizNoIntervalo
     if (b - a) / 2 < tol:
         return a + (b - a) / 2
 
-    for i in range(0, nMax):
+    for i in range(0, n_max):
         r = a + (b - a) / 2
         fr = f(r)
 
