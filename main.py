@@ -32,7 +32,7 @@ def verificar_intervalo(f, df, a, b):
     for i in range(n):
         valor = a + i * (b - a) / (n - 1)
         p = df(valor)
-        if math.isclose(p, 0, abs_tol=EPS):
+        if math.isclose(p, 0.0, abs_tol=EPS):
             raise MaisDeUmRaiz
         if p > 0:
             positivo = True
@@ -40,22 +40,22 @@ def verificar_intervalo(f, df, a, b):
             negativo = True
 
         if positivo and negativo:
-            raise SemRaizNoIntervalo
+            raise MaisDeUmRaiz
 
 
 def secante(f, r0, r1, tol, nMax):
     f0 = f(r0)
     f1 = f(r1)
-    if math.isclose(f0, 0, abs_tol=tol):
+    if math.isclose(f0, 0.0, abs_tol=tol):
         return r0
 
-    for k in range(0, nMax):
+    for i in range(0, nMax):
         if f1 == f0:
             raise ZeroDivisionError
 
         r = r1 - f1 * ((r1 - r0) / (f1 - f0))
 
-        if abs(r1 - r0) < tol or math.isclose(f(r), 0, abs_tol=tol):
+        if abs(r1 - r0) < tol or math.isclose(f(r), 0.0, abs_tol=tol):
             return r
 
         r0, r1 = r1, r
@@ -65,14 +65,14 @@ def secante(f, r0, r1, tol, nMax):
 
 
 def newton_raphson(f, df, r0, tol, nMax):
-    if f(r0) == 0.0:
+    if math.isclose(f(r0), 0.0, abs_tol=tol):
         return r0
 
     for i in range(0, nMax):
         if df(r0) == 0.0:
             raise ZeroDivisionError
         r1 = r0 - (f(r0) / df(r0))
-        if abs(r1 - r0) < tol or math.isclose(f(r1), 0, abs_tol=tol):
+        if abs(r1 - r0) < tol or math.isclose(f(r1), 0.0, abs_tol=tol):
             return r1
 
         r0 = r1
@@ -97,6 +97,7 @@ def biseccao(f, a, b, tol, nMax):
             b = r
         else:
             a = r
+
     raise IteracoesExcedidas
 
 
@@ -122,10 +123,10 @@ def main():
             a = float(input("a: "))
             b = float(input("b: "))
 
-            df = smp.diff(f, x)  # Deriva f em função de x
+            df_sympy = smp.diff(f, x)  # Deriva f em função de x
 
             f = smp.lambdify(x, f)  # Converte a função em método
-            df = smp.lambdify(x, df)  # Converte a derivada em método
+            df = smp.lambdify(x, df_sympy)  # Converte a derivada em método
 
             if not option[0] == 'Biseccao':
                 verificar_intervalo(f, df, a, b)  # Caso não exista uma única raiz, retorna erro
@@ -136,7 +137,7 @@ def main():
             if option[0] == 'Biseccao':
                 raiz = biseccao(f, a, b, tol, n_max)
             elif option[0] == 'Newton-Raphson':
-                df2 = smp.diff(df, x)  # Segunda derivada de f
+                df2_sympy = smp.diff(df_sympy, x)  # Segunda derivada de f
                 df2 = smp.lambdify(x, df2)  # Converte a segunda derivada em método
 
                 r0 = a if (df2(a) * f(
