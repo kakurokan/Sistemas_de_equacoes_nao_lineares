@@ -81,7 +81,10 @@ def newton_raphson(f, df, r0, tol, n_max):
 
 
 def biseccao(f, a, b, tol, n_max):
-    if f(a) * f(b) > 0:
+    fa = f(a)
+    fb = f(b)
+
+    if fa * fb > 0:
         raise SemRaizNoIntervalo
     if (b - a) / 2 < tol:
         return a + (b - a) / 2
@@ -93,10 +96,10 @@ def biseccao(f, a, b, tol, n_max):
         if ((b - a) / 2) < tol or math.isclose(fr, 0, abs_tol=tol):
             return r
 
-        if f(a) * fr < 0:
-            b = r
+        if fa * fr < 0:
+            b, fb = r, fr
         else:
-            a = r
+            a, fa = r, fr
 
     raise IteracoesExcedidas
 
