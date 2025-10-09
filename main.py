@@ -1,9 +1,10 @@
 import math
-from logging import exception
 
 import sympy as smp
 from pick import pick
 from sympy.parsing.sympy_parser import convert_xor, standard_transformations, implicit_multiplication_application
+
+EPS = 1e-12  # Tolerancia absoluta para verificar_intervalo
 
 
 class IteracoesExcedidas(Exception):
@@ -18,33 +19,34 @@ class MaisDeUmRaiz(Exception):
     pass
 
 
-def verificar_intervalo(f, df, df2, a, b):
+def verificar_intervalo(f, df, a, b):
     if f(a) * f(b) > 0:
         raise SemRaizNoIntervalo
 
-    n = 200  # Quantidade de pontos para testar
+    n = 500  # Quantidade de pontos para testar
 
-    crescente = False
-    decrescente = False
+    positivo = False
+    negativo = False
 
-    # Calcula os valores em df2() para cada ponto
+    # Calcula os valores em df() para cada ponto
     for i in range(n):
         valor = a + i * (b - a) / (n - 1)
-        p = df2(valor)
-        if p == 0.0 or df(valor) == 0.0:
+        p = df(valor)
+        if math.isclose(p, 0, abs_tol=EPS):
             raise MaisDeUmRaiz
-        if p > 0 and not decrescente:
-            crescente = True
-        elif p < 0 and not crescente:
-            decrescente = True
-        else:
-            raise MaisDeUmRaiz
+        if p > 0:
+            positivo = True
+        elif p < 0:
+            negativo = True
+
+        if positivo and negativo:
+            raise SemRaizNoIntervalo
 
 
 def secante(f, r0, r1, tol, nMax):
     f0 = f(r0)
     f1 = f(r1)
-    if math.isclose(f0, 0, rel_tol=tol):
+    if math.isclose(f0, 0, abs_tol=tol):
         return r0
 
     for k in range(0, nMax):
@@ -53,7 +55,7 @@ def secante(f, r0, r1, tol, nMax):
 
         r = r1 - f1 * ((r1 - r0) / (f1 - f0))
 
-        if abs(r1 - r0) < tol or math.isclose(f(r), 0, rel_tol=tol):
+        if abs(r1 - r0) < tol or math.isclose(f(r), 0, abs_tol=tol):
             return r
 
         r0, r1 = r1, r
@@ -70,7 +72,7 @@ def newton_raphson(f, df, r0, tol, nMax):
         if df(r0) == 0.0:
             raise ZeroDivisionError
         r1 = r0 - (f(r0) / df(r0))
-        if abs(r1 - r0) < tol or math.isclose(f(r1), 0, rel_tol=tol):
+        if abs(r1 - r0) < tol or math.isclose(f(r1), 0, abs_tol=tol):
             return r1
 
         r0 = r1
@@ -88,7 +90,7 @@ def biseccao(f, a, b, tol, nMax):
         r = a + (b - a) / 2
         fr = f(r)
 
-        if ((b - a) / 2) < tol or math.isclose(fr, 0, rel_tol=tol):
+        if ((b - a) / 2) < tol or math.isclose(fr, 0, abs_tol=tol):
             return r
 
         if f(a) * fr < 0:
@@ -121,21 +123,22 @@ def main():
             b = float(input("b: "))
 
             df = smp.diff(f, x)  # Deriva f em função de x
-            df2 = smp.diff(df, x)  # Segunda derivada de f
 
             f = smp.lambdify(x, f)  # Converte a função em método
             df = smp.lambdify(x, df)  # Converte a derivada em método
-            df2 = smp.lambdify(x, df2)  # Converte a segunda derivada em método
 
             if not option[0] == 'Biseccao':
-                verificar_intervalo(f, df, df2, a, b)  # Caso não exista uma única raiz, retorna erro
+                verificar_intervalo(f, df, a, b)  # Caso não exista uma única raiz, retorna erro
 
             n_max = int(input("Insira o número máximo de iterações: "))
-            tol = float(input("Insira a tolerância (absoluta ou relativa): "))
+            tol = float(input("Insira a tolerância absoluta: "))
 
             if option[0] == 'Biseccao':
                 raiz = biseccao(f, a, b, tol, n_max)
             elif option[0] == 'Newton-Raphson':
+                df2 = smp.diff(df, x)  # Segunda derivada de f
+                df2 = smp.lambdify(x, df2)  # Converte a segunda derivada em método
+
                 r0 = a if (df2(a) * f(
                     a) > 0) else b  # Verifica quais dos extremos tem o mesmo sinal da segunda derivada
                 raiz = newton_raphson(f, df, r0, tol, n_max)
@@ -157,7 +160,7 @@ def main():
         print("Ocorreu um erro de divisão por zero.")
     except MaisDeUmRaiz as e:
         print("Não é possível garantir a unicidade no intervalo")
-    except exception as e:
+    except Exception as e:
         print(f"Erro inesperado: {e}")
 
 
