@@ -132,8 +132,8 @@ def main():
 
             df_sympy = smp.diff(f, x)  # Deriva f em função de x
 
-            f = smp.lambdify(x, f)  # Converte a função em método
-            df = smp.lambdify(x, df_sympy)  # Converte a derivada em método
+            f = smp.lambdify(x, f, modules="math")  # Converte a função em método
+            df = smp.lambdify(x, df_sympy, modules="math")  # Converte a derivada em método
 
             if not option[0] == 'Biseccao':
                 verificar_intervalo(f, df, a, b)  # Caso não exista uma única raiz, retorna erro
@@ -145,7 +145,7 @@ def main():
                 raiz = biseccao(f, a, b, tol, n_max)
             elif option[0] == 'Newton-Raphson':
                 df2_sympy = smp.diff(df_sympy, x)  # Segunda derivada de f
-                df2 = smp.lambdify(x, df2_sympy)  # Converte a segunda derivada em método
+                df2 = smp.lambdify(x, df2_sympy, modules="math")  # Converte a segunda derivada em método
 
                 r0 = a if (df2(a) * f(
                     a) > 0) else b  # Verifica quais dos extremos tem o mesmo sinal da segunda derivada
