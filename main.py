@@ -19,28 +19,9 @@ class MaisDeUmRaiz(Exception):
     pass
 
 
-def verificar_intervalo(f, df, a, b):
+def verificar_intervalo(f, a, b):
     if f(a) * f(b) > 0:
         raise SemRaizNoIntervalo
-
-    n = 500  # Quantidade de pontos para testar
-
-    positivo = False
-    negativo = False
-
-    # Calcula os valores em df() para cada ponto
-    for i in range(n):
-        valor = a + i * (b - a) / (n - 1)
-        p = df(valor)
-        if math.isclose(p, 0.0, abs_tol=EPS):
-            raise MaisDeUmRaiz
-        if p > 0:
-            positivo = True
-        elif p < 0:
-            negativo = True
-
-        if positivo and negativo:
-            raise MaisDeUmRaiz
 
 
 def secante(f, r0, r1, tol, n_max):
@@ -84,8 +65,6 @@ def biseccao(f, a, b, tol, n_max):
     fa = f(a)
     fb = f(b)
 
-    if fa * fb > 0:
-        raise SemRaizNoIntervalo
     if (b - a) / 2 < tol:
         return a + (b - a) / 2
 
@@ -110,6 +89,7 @@ def main():
     try:
         while is_running:
             title = 'Selecione um método para encontrar a raiz da função: '
+
             options = ('Biseccao', 'Newton-Raphson', 'Secante')
             option = pick(options, title)
 
@@ -135,8 +115,7 @@ def main():
             f = smp.lambdify(x, f, modules="math")  # Converte a função em método
             df = smp.lambdify(x, df_sympy, modules="math")  # Converte a derivada em método
 
-            if not option[0] == 'Biseccao':
-                verificar_intervalo(f, df, a, b)  # Caso não exista uma única raiz, retorna erro
+            verificar_intervalo(f, a, b)
 
             n_max = int(input("Insira o número máximo de iterações: "))
             tol = float(input("Insira a tolerância absoluta: "))
