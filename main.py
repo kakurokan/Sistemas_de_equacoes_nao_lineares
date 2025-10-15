@@ -2,9 +2,8 @@ import math
 
 import sympy as smp
 from pick import pick
+from sympy import SympifyError
 from sympy.parsing.sympy_parser import convert_xor, standard_transformations, implicit_multiplication_application
-
-EPS = 1e-12  # Tolerancia absoluta para verificar_intervalo
 
 
 class IteracoesExcedidas(Exception):
@@ -41,7 +40,6 @@ def secante(f, r0, r1, tol, n_max):
 
         r0, r1 = r1, r
         f0, f1 = f1, f(r)
-
     raise IteracoesExcedidas
 
 
@@ -57,7 +55,6 @@ def newton_raphson(f, df, r0, tol, n_max):
             return r1
 
         r0 = r1
-
     raise IteracoesExcedidas
 
 
@@ -77,6 +74,7 @@ def biseccao(f, a, b, tol, n_max):
 
         if fa * fr < 0:
             b, fb = r, fr
+
         else:
             a, fa = r, fr
 
@@ -102,6 +100,11 @@ def main():
             f = smp.parse_expr(f, local_dict=locals_vars,
                                transformations=transformations)  # Converte o input numa expressão sympy
 
+            df_sympy = smp.diff(f, x)  # Deriva f em função de x
+
+            f = smp.lambdify(x, f, modules="math")  # Converte a função em método
+            df = smp.lambdify(x, df_sympy, modules="math")  # Converte a derivada em método
+
             print("Insira o intervalo [a; b] onde existe única uma raiz de f(x).")
             a = float(input("a: "))
             b = float(input("b: "))
@@ -110,17 +113,16 @@ def main():
                 print("Erro: a deve ser menor que b. Tente novamente.")
                 continue
 
-            df_sympy = smp.diff(f, x)  # Deriva f em função de x
-
-            f = smp.lambdify(x, f, modules="math")  # Converte a função em método
-            df = smp.lambdify(x, df_sympy, modules="math")  # Converte a derivada em método
-
-            verificar_intervalo(f, a, b)
+            verificar_intervalo(f, a, b)  # Verifica o intervalo pelo teorema do valor intermédio
 
             n_max = int(input("Insira o número máximo de iterações: "))
             tol = float(input("Insira a tolerância absoluta: "))
 
-            if option[0] == 'Biseccao':
+            if math.isclose(f(a), 0.0, abs_tol=tol):  # Verifica se a é raiz da função
+                raiz = a
+            elif math.isclose(f(b), 0.0, abs_tol=tol):  # Verifica se b é raiz da função
+                raiz = b
+            elif option[0] == 'Biseccao':
                 raiz = biseccao(f, a, b, tol, n_max)
             elif option[0] == 'Newton-Raphson':
                 df2_sympy = smp.diff(df_sympy, x)  # Segunda derivada de f
@@ -136,7 +138,7 @@ def main():
             print(f"f({raiz}) = {f(raiz)}")
 
             print("\n")
-            is_running = input("Deseja continuar? (s/n)").lower() == "s"
+            is_running = input("Deseja continuar? (s/n) ").lower() == "s"
 
 
     except SemRaizNoIntervalo as e:
@@ -149,6 +151,8 @@ def main():
         print("Não é possível garantir a unicidade no intervalo")
     except Exception as e:
         print(f"Erro inesperado: {e}")
+    except SympifyError as e:
+        print(f"Erro de sintaxe: {e}")
 
 
 main()
