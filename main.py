@@ -14,10 +14,6 @@ class SemRaizNoIntervalo(Exception):
     pass
 
 
-class MaisDeUmRaiz(Exception):
-    pass
-
-
 def verificar_intervalo(f, a, b):
     if f(a) * f(b) > 0:
         raise SemRaizNoIntervalo
@@ -60,7 +56,6 @@ def newton_raphson(f, df, r0, tol, n_max):
 
 def biseccao(f, a, b, tol, n_max):
     fa = f(a)
-    fb = f(b)
 
     if (b - a) / 2 < tol:
         return a + (b - a) / 2
@@ -92,7 +87,7 @@ def main():
             option = pick(options, title)
 
             x = smp.symbols('x', real=True)  # Define x como variável real
-            f = input("Insira a funcao: ")
+            f = input("Insira a funcao: ").strip()
             transformations = (standard_transformations +
                                (implicit_multiplication_application,
                                 convert_xor))  # Permite que o parse aceite '^' = **, 'ax' = a * x, e^a = exp(a)
@@ -106,8 +101,8 @@ def main():
             df = smp.lambdify(x, df_sympy, modules="math")  # Converte a derivada em método
 
             print("Insira o intervalo [a; b] onde existe única uma raiz de f(x).")
-            a = float(input("a: "))
-            b = float(input("b: "))
+            a = float(input("a: ").strip())
+            b = float(input("b: ").strip())
 
             if a >= b:
                 print("Erro: a deve ser menor que b. Tente novamente.")
@@ -147,12 +142,10 @@ def main():
         print("O número de iterações excedeu o limite dado.")
     except ZeroDivisionError as e:
         print("Ocorreu um erro de divisão por zero.")
-    except MaisDeUmRaiz as e:
-        print("Não é possível garantir a unicidade no intervalo")
-    except Exception as e:
-        print(f"Erro inesperado: {e}")
     except SympifyError as e:
         print(f"Erro de sintaxe: {e}")
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
 
 
 main()
